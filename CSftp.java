@@ -1,6 +1,10 @@
 
 import java.lang.System;
 import java.io.IOException;
+import java.net.Socket;
+import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 //
 // This is an implementation of a simplified version of a command 
@@ -33,7 +37,29 @@ public class CSftp
 		if (len <= 0) 
 		    break;
 		// Start processing the command here.
-		System.out.println("900 Invalid command.");
+
+		//user open
+
+		//
+		Socket echoSocket = new Socket("ftp.gnu.org", 21);
+		PrintWriter out =
+        new PrintWriter(echoSocket.getOutputStream(), true);
+    	BufferedReader in =
+        	new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+    	BufferedReader stdIn =
+        	new BufferedReader(new InputStreamReader(System.in));
+
+        String userInput;
+	while ((userInput = stdIn.readLine()) != null) {
+   		 out.println(userInput);
+    System.out.println("<-- " + in.readLine()); 
+}
+		
+		String input = new String(cmdString).replaceAll("\\s", "");
+		System.out.println("--> " + input);
+
+
+		// System.out.println("900 Invalid command.");
 	    }
 	} catch (IOException exception) {
 	    System.err.println("998 Input error while reading commands, terminating.");
