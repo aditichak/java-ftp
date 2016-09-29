@@ -41,7 +41,7 @@ public class CSftp
 		//user open
 
 		//
-		Socket echoSocket = new Socket("ftp.gnu.org", 21);
+		Socket echoSocket = new Socket(args[0], Integer.parseInt(args[1]));
 		PrintWriter out =
         new PrintWriter(echoSocket.getOutputStream(), true);
     	BufferedReader in =
