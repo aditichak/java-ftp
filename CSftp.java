@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 //
 // This is an implementation of a simplified version of a command 
 // line ftp client. The program always takes two arguments
@@ -122,7 +124,7 @@ public class CSftp
 						
 						File downloadFile1 = new File("./" + userInput.substring(4, userInput.length()));
 						downloadFile1.createNewFile();
-						FileOutputStream outputStream1 = new FileOutputStream(downloadFile1);
+
 						out.println("TYPE I");
 						System.out.println("--> " + "TYPE I");
 						System.out.println("<-- " + in.readLine());
@@ -145,22 +147,34 @@ public class CSftp
 						
 						// int temp = dataReader.readInt();
 						// System.out.println(temp);
+						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 						skipCommand = true;
 
 
-						byte bytes[] = new byte[4096];
-						// if (inStream != null) {
-						// 	try {
+						byte bytes[] = new byte[1];
+						if (inStream != null) {
 
-						// 	}
-						// }
-						
+							FileOutputStream outputStream1 = new FileOutputStream(downloadFile1);
+							DataOutputStream bos = new DataOutputStream(outputStream1);
+							int bytesRead = inStream.read(bytes, 0, bytes.length);
+
+							do {
+								baos.write(bytes);
+								bytesRead = inStream.read(bytes);
+							} while (bytesRead != -1);
+
+							bos.write(baos.toByteArray());
+							bos.flush();
+							bos.close();
+						}
+//							clientSocket.close();
+
 
 						// inStream.read(bytes);
-						dataReader.read(bytes);
+//						dataReader.read(bytes);
 						// System.out.println(bytes);
-						outputStream1.write(bytes);
+//						outputStream1.write(bytes);
 
 						// outputStream1.write(inStream.read(new byte[]));
 						pasvOut.println("QUIT");
