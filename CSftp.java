@@ -117,9 +117,6 @@ public class CSftp
 						PrintWriter pasvOut =
 						new PrintWriter(pasvSocket.getOutputStream(), true);
 						InputStream inStream = pasvSocket.getInputStream();
-						// InputStreamReader inpustStreamReader = new InputStreamReader(inStream);
-						// BufferedReader pasvIn =
-						// new BufferedReader(inpustStreamReader);
 						DataInputStream dataReader = new DataInputStream(inStream);
 						
 						File downloadFile1 = new File("./" + userInput.substring(4, userInput.length()));
@@ -128,25 +125,12 @@ public class CSftp
 						out.println("TYPE I");
 						System.out.println("--> " + "TYPE I");
 						System.out.println("<-- " + in.readLine());
-						// out.println("RETR " + userInput.substring(4, userInput.length()));
-						// out.println("RETR README");
-						// System.out.println("--> " + "LIST");
-						// String inReader = in.readLine();
-						// System.out.println("<-- " + inReader);
-						// inReader = in.readLine();
-						// System.out.println("<-- " + inReader);
-						// pasvOut.println("RETR README");
 						out.println("RETR " + userInput.substring(4, userInput.length()));
-						// out.println("LIST");
 						System.out.println("--> " + "RETR " + userInput.substring(4, userInput.length()));
 						String inReader = in.readLine();
 						System.out.println("<-- " + inReader);
 						inReader = in.readLine();
 						System.out.println("<-- " + inReader);
-						// System.out.println("--> " + "RETR" + userInput.substring(4, userInput.length()));
-						
-						// int temp = dataReader.readInt();
-						// System.out.println(temp);
 						ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
 						skipCommand = true;
@@ -168,15 +152,7 @@ public class CSftp
 							bos.flush();
 							bos.close();
 						}
-//							clientSocket.close();
 
-
-						// inStream.read(bytes);
-//						dataReader.read(bytes);
-						// System.out.println(bytes);
-//						outputStream1.write(bytes);
-
-						// outputStream1.write(inStream.read(new byte[]));
 						pasvOut.println("QUIT");
 
 						// System.out.println("--> " + "QUIT");
@@ -211,8 +187,6 @@ public class CSftp
 
 						String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
 						int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-						// System.out.println(connectIP);
-						// System.out.println(connectPort);
 
 						Socket pasvSocket = new Socket(connectIP, connectPort);
 						PrintWriter pasvOut =
@@ -220,8 +194,6 @@ public class CSftp
 						InputStreamReader inpustStreamReader = new InputStreamReader(pasvSocket.getInputStream());
 						BufferedReader pasvIn =
 						new BufferedReader(inpustStreamReader);
-						// BufferedReader pasvStdIn =
-						// new BufferedReader(new InputStreamReader(System.in));
 
 						out.println("LIST");
 						System.out.println("--> " + "LIST");
@@ -229,13 +201,7 @@ public class CSftp
 						System.out.println("<-- " + inReader);
 						inReader = in.readLine();
 						System.out.println("<-- " + inReader);
-						// while(inReader!=null && inReader.length()!=0) {
-						// 	System.out.println("<-- " + inReader);
-						// 	inReader=in.readLine();
-						// }
-						
-						// out.println("QUIT");
-						// System.out.println("--> " + "QUIT");
+
 						skipCommand = true;
 						String str = pasvIn.readLine();
 						while(str!=null && str.length()!=0) {
@@ -250,23 +216,10 @@ public class CSftp
 						inpustStreamReader.close();
 						pasvIn.close();
 						pasvSocket.close();
-						
-						// out.println("PASV");
-						// System.out.println("--> " + "PASV");
-
-
 
 					}
 					//else errors
 
-			// 		Socket pasvSocket = new Socket(, Integer.parseInt(args[1]));
-			// PrintWriter out =
-			// new PrintWriter(echoSocket.getOutputStream(), true);
-			// BufferedReader in =
-			// new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
-			// BufferedReader stdIn =
-			// new BufferedReader(new InputStreamReader(System.in));
-					// userInput = "LIST";
 				}
 				else if (userInput.startsWith("#") || userInput.length() == 0){
 					skipCommand = true;
