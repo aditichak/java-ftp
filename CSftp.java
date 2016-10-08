@@ -7,7 +7,15 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.DataInputStream;
 //
 // This is an implementation of a simplified version of a command 
 // line ftp client. The program always takes two arguments
@@ -78,7 +86,10 @@ public class CSftp
 
 				else if(userInput.startsWith("quit")){
 					userInput = "QUIT";
-					//dont print prompt
+					out.println(userInput);
+					System.out.println("--> " + userInput);
+					System.out.println("<-- " + in.readLine());
+					System.exit(0);
 				}
 
 				else if(userInput.startsWith("cd ")){
@@ -88,9 +99,6 @@ public class CSftp
 				else if(userInput.startsWith("get ")){
 					System.out.println("--> PASV");
 					out.println("PASV");
-					// System.out.println("<-- " + in.readLine()); 
-					// userInput = "LIST";
-					// userInput = "RETR " + userInput.substring(4, userInput.length());
 					String pasvIP = in.readLine();
 					System.out.println("<-- " + pasvIP); 
 
@@ -99,27 +107,76 @@ public class CSftp
 						System.out.println(pasvIP);
 
 						String[] ip = pasvIP.split(",");
-						// for (String s: ip) {
-						// 	System.out.println(s);
-						// }
 
 						String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
 						int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-						System.out.println(connectIP);
-						System.out.println(connectPort);
-
+					
 						Socket pasvSocket = new Socket(connectIP, connectPort);
 						PrintWriter pasvOut =
 						new PrintWriter(pasvSocket.getOutputStream(), true);
-						BufferedReader pasvIn =
-						new BufferedReader(new InputStreamReader(pasvSocket.getInputStream()));
-						BufferedReader pasvStdIn =
-						new BufferedReader(new InputStreamReader(System.in));
-
+						InputStream inStream = pasvSocket.getInputStream();
+						// InputStreamReader inpustStreamReader = new InputStreamReader(inStream);
+						// BufferedReader pasvIn =
+						// new BufferedReader(inpustStreamReader);
+						DataInputStream dataReader = new DataInputStream(inStream);
+						
+						File downloadFile1 = new File("./" + userInput.substring(4, userInput.length()));
+						downloadFile1.createNewFile();
+						FileOutputStream outputStream1 = new FileOutputStream(downloadFile1);
+						out.println("TYPE I");
+						System.out.println("--> " + "TYPE I");
+						System.out.println("<-- " + in.readLine());
+						// out.println("RETR " + userInput.substring(4, userInput.length()));
+						// out.println("RETR README");
+						// System.out.println("--> " + "LIST");
+						// String inReader = in.readLine();
+						// System.out.println("<-- " + inReader);
+						// inReader = in.readLine();
+						// System.out.println("<-- " + inReader);
+						// pasvOut.println("RETR README");
 						out.println("RETR " + userInput.substring(4, userInput.length()));
-						System.out.println("<-- " + pasvIn.readLine()); 
+						// out.println("LIST");
+						System.out.println("--> " + "RETR " + userInput.substring(4, userInput.length()));
+						String inReader = in.readLine();
+						System.out.println("<-- " + inReader);
+						inReader = in.readLine();
+						System.out.println("<-- " + inReader);
+						// System.out.println("--> " + "RETR" + userInput.substring(4, userInput.length()));
+						
+						// int temp = dataReader.readInt();
+						// System.out.println(temp);
+
+						skipCommand = true;
 
 
+						byte bytes[] = new byte[4096];
+						// if (inStream != null) {
+						// 	try {
+
+						// 	}
+						// }
+						
+
+						// inStream.read(bytes);
+						dataReader.read(bytes);
+						// System.out.println(bytes);
+						outputStream1.write(bytes);
+
+						// outputStream1.write(inStream.read(new byte[]));
+						pasvOut.println("QUIT");
+
+						// System.out.println("--> " + "QUIT");
+						// System.out.println("<-- " + pasvIn.readLine());
+						
+						
+						// System.out.println("<-- " + pasvIn.readLine());
+
+						// inpustStreamReader.close();
+						pasvOut.close();
+						// pasvIn.close();
+						// pasvIn.close();
+						// outputStream1.close();
+						pasvSocket.close();
 					}
 				}
 
@@ -140,19 +197,48 @@ public class CSftp
 
 						String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
 						int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-						System.out.println(connectIP);
-						System.out.println(connectPort);
+						// System.out.println(connectIP);
+						// System.out.println(connectPort);
 
 						Socket pasvSocket = new Socket(connectIP, connectPort);
 						PrintWriter pasvOut =
 						new PrintWriter(pasvSocket.getOutputStream(), true);
+						InputStreamReader inpustStreamReader = new InputStreamReader(pasvSocket.getInputStream());
 						BufferedReader pasvIn =
-						new BufferedReader(new InputStreamReader(pasvSocket.getInputStream()));
-						BufferedReader pasvStdIn =
-						new BufferedReader(new InputStreamReader(System.in));
+						new BufferedReader(inpustStreamReader);
+						// BufferedReader pasvStdIn =
+						// new BufferedReader(new InputStreamReader(System.in));
 
 						out.println("LIST");
-						System.out.println("<-- " + pasvIn.readLine()); 
+						System.out.println("--> " + "LIST");
+						String inReader = in.readLine();
+						System.out.println("<-- " + inReader);
+						inReader = in.readLine();
+						System.out.println("<-- " + inReader);
+						// while(inReader!=null && inReader.length()!=0) {
+						// 	System.out.println("<-- " + inReader);
+						// 	inReader=in.readLine();
+						// }
+						
+						// out.println("QUIT");
+						// System.out.println("--> " + "QUIT");
+						skipCommand = true;
+						String str = pasvIn.readLine();
+						while(str!=null && str.length()!=0) {
+							System.out.println("<-- " + str); 
+							str=pasvIn.readLine();
+						}
+						
+						pasvOut.println("QUIT");
+						// System.out.println("--> " + userInput);
+						System.out.println("<-- " + pasvIn.readLine());
+
+						inpustStreamReader.close();
+						pasvIn.close();
+						pasvSocket.close();
+						
+						// out.println("PASV");
+						// System.out.println("--> " + "PASV");
 
 
 
