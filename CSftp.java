@@ -29,6 +29,23 @@ public class CSftp
 	static final int MAX_LEN = 255;
 	static final int ARG_CNT = 2;
 
+	public static void printInputStream(BufferedReader reader) throws IOException {
+		
+// String str = reader.readLine();
+		// while(str!=null) {
+		// 	System.out.println("<-- " + str); 
+		// 	str=reader.readLine();
+		// }
+	for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+		System.out.println("<-- " + line);
+	}
+}
+
+	public static boolean incorrectNumberArguements() {
+		System.out.println("901 Incorrect number of arguments.");
+		return true;
+	}
+
 	public static void main(String [] args)
 	{
 		byte cmdString[] = new byte[MAX_LEN];
@@ -47,6 +64,7 @@ public class CSftp
 			Socket echoSocket = new Socket(args[0], Integer.parseInt(args[1]));
 			PrintWriter out =
 			new PrintWriter(echoSocket.getOutputStream(), true);
+			// InputStream in = echoSocket.getInputStream();
 			BufferedReader in =
 			new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
 			BufferedReader stdIn =
@@ -62,23 +80,11 @@ public class CSftp
 
 			String userInput;
 			while ((userInput = stdIn.readLine()) != null) {
-	 //    for (int len = 1; len > 0;) {
-		// System.out.print("csftp> ");
-		// // len = System.in.read(cmdString);
-		// len = userInput.length();
-		// if (len <= 0) 
-		//     break;
-		// Start processing the command here.
-
-		//user open
-
-		//
-
-
-
-        // while (userInput != null) {
+				userInput = userInput.trim();
+	 
 				boolean skipCommand = false;
 				if(userInput.startsWith("user ")){
+					//assume that usernames can include all characters so don't check for number of arguements
 					userInput = "USER "+ userInput.substring(5, userInput.length());
 				}
 
@@ -87,18 +93,29 @@ public class CSftp
 				}
 
 				else if(userInput.startsWith("quit")){
-					userInput = "QUIT";
-					out.println(userInput);
-					System.out.println("--> " + userInput);
-					System.out.println("<-- " + in.readLine());
-					System.exit(0);
+					if(userInput.length() > 4) {
+						skipCommand = CSftp.incorrectNumberArguements();
+					} else {
+						userInput = "QUIT";
+						out.println(userInput);
+						System.out.println("--> " + userInput);
+						System.out.println("<-- " + in.readLine());
+						System.exit(0);
+					}
 				}
 
-				else if(userInput.startsWith("cd ")){
-					userInput = "CWD " + userInput.substring(3, userInput.length());
+				else if(userInput.startsWith("cd")){
+					if( userInput.length() < 4  || userInput.substring(3, userInput.length()).contains(" ")) {
+						skipCommand = CSftp.incorrectNumberArguements();
+					} else {
+						userInput = "CWD " + userInput.substring(3, userInput.length());
+					}
 				}
 
-				else if(userInput.startsWith("get ")){
+				else if(userInput.startsWith("get")){
+					if(userInput.length() < 5 ) {
+						skipCommand = CSftp.incorrectNumberArguements();
+					} else {
 					System.out.println("--> PASV");
 					out.println("PASV");
 					String pasvIP = in.readLine();
@@ -112,7 +129,7 @@ public class CSftp
 
 						String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
 						int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-					
+
 						Socket pasvSocket = new Socket(connectIP, connectPort);
 						PrintWriter pasvOut =
 						new PrintWriter(pasvSocket.getOutputStream(), true);
@@ -125,8 +142,16 @@ public class CSftp
 						out.println("TYPE I");
 						System.out.println("--> " + "TYPE I");
 						System.out.println("<-- " + in.readLine());
+						// CSftp.printInputStream(in);
+						// String str = in.readLine();
+						// while(str!=null) {
+						// 	System.out.println("<-- " + str); 
+						// 	str=in.readLine();
+						// }
+
 						out.println("RETR " + userInput.substring(4, userInput.length()));
 						System.out.println("--> " + "RETR " + userInput.substring(4, userInput.length()));
+						// CSftp.printInputStream(in);
 						String inReader = in.readLine();
 						System.out.println("<-- " + inReader);
 						inReader = in.readLine();
@@ -169,54 +194,63 @@ public class CSftp
 						pasvSocket.close();
 					}
 				}
+				}
 
 				else if(userInput.startsWith("dir")){
-					System.out.println("--> PASV");
-					out.println("PASV");
-					String pasvIP = in.readLine();
-					System.out.println("<-- " + pasvIP); 
+					userInput = userInput.trim();
+					if(userInput.length() > 3) {
+						skipCommand = CSftp.incorrectNumberArguements();
+					} else {
+						System.out.println("--> PASV");
+						out.println("PASV");
+						String pasvIP = in.readLine();
+						System.out.println("<-- " + pasvIP); 
 
-					if(pasvIP.startsWith("227 ")) {
-						pasvIP =   pasvIP.substring(27, pasvIP.length() - 1);
-						System.out.println(pasvIP);
+						if(pasvIP.startsWith("227 ")) {
+							pasvIP =   pasvIP.substring(27, pasvIP.length() - 1);
+							System.out.println(pasvIP);
 
-						String[] ip = pasvIP.split(",");
+							String[] ip = pasvIP.split(",");
 						// for (String s: ip) {
 						// 	System.out.println(s);
 						// }
 
-						String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
-						int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
+							String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
+							int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
 
-						Socket pasvSocket = new Socket(connectIP, connectPort);
-						PrintWriter pasvOut =
-						new PrintWriter(pasvSocket.getOutputStream(), true);
-						InputStreamReader inpustStreamReader = new InputStreamReader(pasvSocket.getInputStream());
-						BufferedReader pasvIn =
-						new BufferedReader(inpustStreamReader);
+							Socket pasvSocket = new Socket(connectIP, connectPort);
+							PrintWriter pasvOut =
+							new PrintWriter(pasvSocket.getOutputStream(), true);
+							InputStreamReader inpustStreamReader = new InputStreamReader(pasvSocket.getInputStream());
+							BufferedReader pasvIn =
+							new BufferedReader(inpustStreamReader);
 
-						out.println("LIST");
-						System.out.println("--> " + "LIST");
-						String inReader = in.readLine();
-						System.out.println("<-- " + inReader);
-						inReader = in.readLine();
-						System.out.println("<-- " + inReader);
+							out.println("LIST");
+							System.out.println("--> " + "LIST");
+							// CSftp.printInputStream(in);
+							String inReader = in.readLine();
+							System.out.println("<-- " + inReader);
+							inReader = in.readLine();
+							System.out.println("<-- " + inReader);
+							// printInputStream(in);
 
-						skipCommand = true;
-						String str = pasvIn.readLine();
-						while(str!=null && str.length()!=0) {
-							System.out.println("<-- " + str); 
-							str=pasvIn.readLine();
-						}
-						
-						pasvOut.println("QUIT");
+							skipCommand = true;
+							CSftp.printInputStream(pasvIn);
+							// String str = pasvIn.readLine();
+							// while(str!=null && str.length()!=0) {
+							// 	System.out.println("<-- " + str); 
+							// 	str=pasvIn.readLine();
+							// }
+
+							pasvOut.println("QUIT");
 						// System.out.println("--> " + userInput);
-						System.out.println("<-- " + pasvIn.readLine());
+							System.out.println("<-- " + pasvIn.readLine());
 
-						inpustStreamReader.close();
-						pasvIn.close();
-						pasvSocket.close();
+							inpustStreamReader.close();
+							pasvIn.close();
+							pasvSocket.close();
 
+						}
 					}
 					//else errors
 
@@ -225,34 +259,22 @@ public class CSftp
 					skipCommand = true;
 				}
 
-				// else {
-				// 	System.out.println("900 Invalid command.");
-				// 	skipCommand = true;
-				// }
+				else {
+					System.out.println("900 Invalid command.");
+					skipCommand = true;
+				}
+
 				if (!skipCommand) {
 					out.println(userInput);
 					System.out.println("--> " + userInput);
 					System.out.println("<-- " + in.readLine());
+					// CSftp.printInputStream(in);
 				}
-					// String output = "<-- "; 
-					// String line;
-				// 	while ((line = in.readLine()) != null)
-    //     {
 
-    //         System.out.println(line);
-
-    //     }
-				// 		output += line + System.getProperty("line.separator");
- 			// 	// 	    System.out.println(line);
- 			// 	// 	    line = in.readLine();
-				// 	// }
-				// }
 				System.out.print("csftp> ");
-		// len = System.in.read(cmdString);
+
 			}
 
-			// String input = new String(cmdString).replaceAll("\\s", "");
-			// System.out.println("--> " + input);
 
 
 
