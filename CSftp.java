@@ -33,14 +33,16 @@ public class CSftp
 
 	public static Socket getPASVSocket(PrintWriter writer, BufferedReader reader){
 		String connectIP = "hello";
-			int connectPort = 33;
+		int connectPort = 33;
 		Socket pasvSocket = new Socket();
 		try {	 
 			CSftp.sendCommandControlSocket(writer, "PASV");			
 			String pasvIP = CSftp.readInputLine(reader);
 
 			if(pasvIP.startsWith("227 ")) {
-				pasvIP =  pasvIP.substring(27, pasvIP.length() - 1);
+				// pasvIP =  pasvIP.substring(27, pasvIP.length() - 1);
+				pasvIP = pasvIP.substring(pasvIP.indexOf("(") + 1);
+				pasvIP = pasvIP.substring(0, pasvIP.indexOf(")"));
 				String[] ip = pasvIP.split(",");
 				connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
 				connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
@@ -57,23 +59,26 @@ public class CSftp
 			return null;
 	}
 
-	public static void printPASVInputStream(BufferedReader  pasvReader) throws SocketTimeoutException {
-		try {
+	public static void printPASVInputStream(BufferedReader  pasvReader) throws SocketTimeoutException, IOException {
+		// try {
 
 			String str = pasvReader.readLine();
 			while(str!=null && str.length()!=0) {
 				System.out.println("<-- " + str); 
 				str=pasvReader.readLine();
 			}
-		} catch (IOException exception) {
-			System.out.println("935 Data transfer connection I/O error, closing data connection.");
-		}
+		// }
+		// catch (IOException exception) {
+		// 	System.out.println("935 Data transfer connection I/O error, closing data connection.");
+		// }
 
 	}
 
 	public static void sendCommandControlSocket(PrintWriter writer, String command) {
-		writer.println(command);
+		// command = command + "\r\n";
+		writer.print(command + "\r\n");
 		System.out.println("--> " + command);
+		writer.flush();
 	}
 
 	public static void emptyInputStream(BufferedReader reader, Socket socket) throws IOException {
@@ -89,8 +94,9 @@ public class CSftp
 	public static String readInputLine (BufferedReader reader) {
 		String line = "";
 		try {
-		 	line = reader.readLine();
-		 	return line;
+			line = reader.readLine();
+			System.out.println("<-- " + line);
+			return line;
 		} catch (IOException exception) {
 			System.out.println("925 Control connection I/O error, closing control connection.");
 			System.exit(0);
@@ -98,19 +104,22 @@ public class CSftp
 		return line;
 	}
 
-	public static void printInputStream(BufferedReader reader, Socket socket) {
+	public static String printInputStream(BufferedReader reader, Socket socket) {
+		
+		String line = "";
 		try {	
-			socket.setSoTimeout(500);
-			for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+			socket.setSoTimeout(1000);
+			for (line = reader.readLine(); line != null; line = reader.readLine()) {
 				System.out.println("<-- " + line);
 			}
 		}
 		catch (SocketTimeoutException exception) {
-			return;
+			return line;
 		} catch (IOException exception) {
 			System.out.println("925 Control connection I/O error, closing control connection.");
 			System.exit(0);
 		}
+		return line;
 	}
 
 	public static boolean incorrectNumberArguements() {
@@ -145,19 +154,23 @@ public class CSftp
 			try {
 				controlSocket.setSoTimeout(30*1000);
 				connected = in.readLine();
-
+				System.out.println(connected);
 			}
 			catch (SocketTimeoutException exception) {
 				System.out.println("920 Control connection to " +  args[0] + " on port " + args[1] + " failed to open.");
+				System.out.println("Socket time out");
 				System.exit(0);
 			}
+
+
+			// connected = CSftp.printInputStream(in, controlSocket);
 
 			if(!connected.startsWith("220 ") || connected.startsWith("120 ") || connected.startsWith("421 ")) {
 				System.out.println("920 Control connection to " +  args[0] + " on port " + args[1] + " failed to open.");
 				System.exit(0);
 			}
 
-			System.out.println("<-- " + connected); 
+			// System.out.println("<-- " + connected); 
 			System.out.print("csftp> ");
 
 			String userInput;
@@ -197,33 +210,12 @@ public class CSftp
 					if(userInput.length() < 5 ) {
 						skipCommand = CSftp.incorrectNumberArguements();
 					} else {
-						// System.out.println("--> PASV");
-						// out.println("PASV");
-						// String pasvIP = in.readLine();
-						// // System.out.println("<-- " + pasvIP); 
-						// CSftp.sendCommandControlSocket(out, "PASV");
-						// CSftp.printInputStream(in, controlSocket);
-
-						// if(pasvIP.startsWith("227 ")) {
-						// 	pasvIP =   pasvIP.substring(27, pasvIP.length() - 1);
-						// 	// System.out.println(pasvIP);
-
-						// 	String[] ip = pasvIP.split(",");
-
-						// 	String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
-						// 	int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-
-							// Socket pasvSocket = new Socket(connectIP, connectPort);
-
-							Socket pasvSocket = CSftp.getPASVSocket(out, in);
-							if (pasvSocket != null) {
+						Socket pasvSocket = CSftp.getPASVSocket(out, in);
+						if (pasvSocket != null) {
 							PrintWriter pasvOut =
 							new PrintWriter(pasvSocket.getOutputStream(), true);
 							InputStream inStream = pasvSocket.getInputStream();
 							DataInputStream dataReader = new DataInputStream(inStream);
-
-							
-
 							File downloadFile1 = new File("./" + userInput.substring(4, userInput.length()));
 							downloadFile1.createNewFile();
 
@@ -233,7 +225,6 @@ public class CSftp
 							String fileName = userInput.substring(4, userInput.length());
 
 							out.println("RETR " + fileName);
-							
 
 							System.out.println("--> " + "RETR " + fileName);
 							CSftp.printInputStream(in, controlSocket);
@@ -272,7 +263,7 @@ public class CSftp
 							pasvSocket.close();
 						}
 					}
-					}
+				}
 				
 
 				else if(userInput.startsWith("dir")){
@@ -280,19 +271,9 @@ public class CSftp
 					if(userInput.length() > 3) {
 						skipCommand = CSftp.incorrectNumberArguements();
 					} else {
-						// System.out.println("--> PASV");
-						// out.println("PASV");
-						// String pasvIP = in.readLine();
-						// System.out.println("<-- " + pasvIP); 
 
-						// if(pasvIP.startsWith("227 ")) {
-						// 	pasvIP =   pasvIP.substring(27, pasvIP.length() - 1);
-						// 	String[] ip = pasvIP.split(",");
-						// 	String connectIP = ip[0] + "." + ip[1] + "." + ip[2] +  "." + ip[3];
-						// 	int connectPort = Integer.parseInt(ip[4]) * 256 + Integer.parseInt(ip[5]);
-
-							Socket pasvSocket = CSftp.getPASVSocket(out, in);
-							if (pasvSocket != null) {
+						Socket pasvSocket = CSftp.getPASVSocket(out, in);
+						if (pasvSocket != null) {
 							PrintWriter pasvOut =
 							new PrintWriter(pasvSocket.getOutputStream(), true);
 							InputStreamReader inputStreamReader = new InputStreamReader(pasvSocket.getInputStream());
@@ -316,7 +297,7 @@ public class CSftp
 							pasvSocket.close();
 
 						}
-					
+
 					}
 
 				}
@@ -324,10 +305,10 @@ public class CSftp
 					skipCommand = true;
 				}
 
-				else {
-					System.out.println("900 Invalid command.");
-					skipCommand = true;
-				}
+				// else {
+				// 	System.out.println("900 Invalid command.");
+				// 	skipCommand = true;
+				// }
 
 				if (!skipCommand) {
 					CSftp.sendCommandControlSocket(out, userInput);
@@ -337,10 +318,17 @@ public class CSftp
 				System.out.print("csftp> ");
 
 			}
+			out.close();
+			in.close();
+			stdIn.close();
+			controlSocket.close();
 
 		} catch (IOException exception) {
-			// echoSocket.close();
 			System.err.println("998 Input error while reading commands, terminating.");
+		}
+
+		catch (Exception exception) {
+			System.err.println("999 Processing error. " + exception.getMessage());
 		}
 	}
 }
