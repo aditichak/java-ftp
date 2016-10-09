@@ -218,7 +218,6 @@ public class CSftp
 				}
 
 				if (!skipCommand) {
-					System.out.println("in Skip command");
 					CSftp.sendCommandControlSocket(out, userInput);
 					CSftp.printInputStream(in, controlSocket);
 				}
