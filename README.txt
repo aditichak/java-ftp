@@ -1,3 +1,3 @@
 
-Put any comments for the markers in this file. If you don't have any comments you can delete the file from your repo.
+Code uses Java socket related classes to create an FTP client and provides some basic FTP client functionality through a simple text-based interface. Program provides a simple command line interface to the user.
 
